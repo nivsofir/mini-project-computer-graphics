@@ -9,6 +9,7 @@ export const VignetteShader = {
     tDiffuse: { value: null },
     vignetteStrength: { value: 1.15 },
     aberration: { value: 0.0025 },
+    flash: { value: 0.0 },
   },
 
   vertexShader: /* glsl */ `
@@ -23,6 +24,7 @@ export const VignetteShader = {
     uniform sampler2D tDiffuse;
     uniform float vignetteStrength;
     uniform float aberration;
+    uniform float flash;
     varying vec2 vUv;
 
     void main() {
@@ -37,6 +39,13 @@ export const VignetteShader = {
       vec3 color = vec3(r, g, b);
       float vignette = smoothstep(0.85, 0.2, dist * vignetteStrength);
       color *= mix(1.0, vignette, 0.55);
+
+      // Lightning: a faint, top-weighted sky-glow (cloud scatter around
+      // the bolt), not a full-screen whiteout - the bolt itself, drawn
+      // separately in the scene, carries the actual bright flash.
+      float skyBias = smoothstep(0.15, 0.9, vUv.y);
+      vec3 flashColor = vec3(0.75, 0.83, 1.0);
+      color += flashColor * flash * skyBias * 0.35;
 
       gl_FragColor = vec4(color, 1.0);
     }

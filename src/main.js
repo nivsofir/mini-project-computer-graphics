@@ -9,6 +9,8 @@ import { Roads } from "./environment/Roads.js";
 import { Rain } from "./environment/Rain.js";
 import { RainSplashes } from "./environment/RainSplashes.js";
 import { Lightning } from "./environment/Lightning.js";
+import { LightningBolt } from "./environment/LightningBolt.js";
+import { Weather } from "./environment/Weather.js";
 import { Traffic } from "./environment/Traffic.js";
 import { Pedestrians } from "./environment/Pedestrians.js";
 import { createSky } from "./environment/Sky.js";
@@ -106,7 +108,8 @@ const blueLight = new THREE.PointLight(0x00aaff, 150, 40);
 blueLight.position.set(-15, 8, -10);
 scene.add(blueLight);
 
-const lightning = new Lightning(ambientLight, directionalLight);
+const lightningBolt = new LightningBolt(scene);
+const lightning = new Lightning(ambientLight, directionalLight, () => lightningBolt.strike());
 
 // ==========================
 // Ground
@@ -179,9 +182,23 @@ regenerateCity(currentSeed);
 
 const traffic = new Traffic(scene);
 const pedestrians = new Pedestrians(scene);
-const rain = new Rain(scene, 2500);
+const rain = new Rain(scene, 0);
 const rainSplashes = new RainSplashes(scene);
 const onRainLand = (x, z) => rainSplashes.spawn(x, z);
+
+// ==========================
+// Weather (sunny -> raining -> lightning)
+// ==========================
+
+const weather = new Weather({
+  scene,
+  rain,
+  lightning,
+  ambientLight,
+  directionalLight,
+});
+let currentWeatherLevel = 0;
+weather.setLevel(currentWeatherLevel);
 
 // ==========================
 // Cinematic camera
@@ -199,7 +216,7 @@ const ui = createUI({
   fogDensity: scene.fog.density,
   bloomStrength: postProcessing.bloomPass.strength,
   cameraSpeed: cinematicCamera.speed,
-  rainAmount: rain.count,
+  weatherLevel: currentWeatherLevel,
 
   onGenerate: () => {
     const seed = randomSeed();
@@ -219,8 +236,9 @@ const ui = createUI({
   onSpeedChange: (speed) => {
     cinematicCamera.setSpeed(speed);
   },
-  onRainChange: (count) => {
-    rain.setCount(count);
+  onWeatherChange: (level) => {
+    currentWeatherLevel = level;
+    weather.setLevel(level);
   },
 });
 
@@ -274,6 +292,8 @@ function animate() {
   cityGenerator.update(clock.elapsedTime);
   roads.update(clock.elapsedTime);
   lightning.update(delta);
+  lightningBolt.update(lightning.flashIntensity);
+  postProcessing.setFlash(lightning.flashIntensity);
   reflectionProbe.update(delta);
 
   renderer.info.reset();

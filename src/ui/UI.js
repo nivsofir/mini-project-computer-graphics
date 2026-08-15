@@ -16,8 +16,8 @@ export function createUI(options) {
     bloomStrength,
     onSpeedChange,
     cameraSpeed,
-    onRainChange,
-    rainAmount,
+    onWeatherChange,
+    weatherLevel,
   } = options;
 
   const root = document.createElement("div");
@@ -49,8 +49,11 @@ export function createUI(options) {
         <input type="range" min="0.000005" max="0.00006" step="0.000001" value="${cameraSpeed}" class="ui-speed" />
       </div>
       <div class="ui-slider-row">
-        <label>Rain Amount</label>
-        <input type="range" min="0" max="6000" step="100" value="${rainAmount}" class="ui-rain" />
+        <label>Weather</label>
+        <input type="range" min="0" max="1" step="0.01" value="${weatherLevel}" class="ui-weather" />
+        <div class="ui-slider-labels">
+          <span>Sunny</span><span>Rain</span><span>Lightning</span>
+        </div>
       </div>
     </div>
 
@@ -96,8 +99,8 @@ export function createUI(options) {
   root.querySelector(".ui-speed").addEventListener("input", (event) => {
     onSpeedChange?.(parseFloat(event.target.value));
   });
-  root.querySelector(".ui-rain").addEventListener("input", (event) => {
-    onRainChange?.(parseInt(event.target.value, 10));
+  root.querySelector(".ui-weather").addEventListener("input", (event) => {
+    onWeatherChange?.(parseFloat(event.target.value));
   });
 
   return {

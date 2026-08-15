@@ -135,6 +135,15 @@ canvas {
   accent-color: #00ffff;
 }
 
+.ui-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: #4f7078;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
 .ui-hint {
   margin-top: 10px;
   font-size: 9px;
