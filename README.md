@@ -10,11 +10,11 @@ A real-time, fully procedural 3D cyberpunk city built with [Three.js](https://th
 
 ## Preview
 
-![City overview](src\assets\preview2.gif)
+![City overview](src/assets/preview2.gif)
 
-![Street level / traffic](src\assets\preview3.gif)
+![Street level / traffic](src/assets/preview3.gif)
 
-![Cinematic flythrough](src\assets\preview1.gif)
+![Cinematic flythrough](src/assets/preview1.gif)
 
 ## Running it
 
