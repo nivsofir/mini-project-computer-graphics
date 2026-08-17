@@ -6,6 +6,7 @@ import {
   ROAD_HALF_WIDTH,
   SIDEWALK_WIDTH,
 } from "../config.js";
+import { applySnowCoating } from "./SnowAccumulation.js";
 
 // ==========================
 // Roads
@@ -195,7 +196,10 @@ function createNeonPulseTexture() {
 }
 
 export class Roads {
-  constructor() {
+  // `snowUniform`, if given, is Weather's shared snow-coverage uniform -
+  // the asphalt and sidewalks get patched to whiten under it, same as the
+  // building rooftops in CityGenerator.
+  constructor(snowUniform) {
     this.group = new THREE.Group();
     this.group.name = "Roads";
 
@@ -277,11 +281,16 @@ export class Roads {
       }),
     );
     this.asphaltMaterial = asphaltMesh.material;
-    buildMesh(
+    const sidewalkMesh = buildMesh(
       this.group,
       sidewalks,
       new THREE.MeshStandardMaterial({ color: 0x181b26, roughness: 0.8, metalness: 0.1 }),
     );
+
+    if (snowUniform) {
+      applySnowCoating(this.asphaltMaterial, snowUniform);
+      if (sidewalkMesh) applySnowCoating(sidewalkMesh.material, snowUniform);
+    }
 
     const neonXMesh = buildMesh(
       this.group,

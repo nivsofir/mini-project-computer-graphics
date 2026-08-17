@@ -34,12 +34,17 @@ export class PostProcessing {
       0.4, // threshold
     );
     this.composer.addPass(this.bloomPass);
-    this.composer.addPass(new ShaderPass(VignetteShader));
+    this.vignettePass = new ShaderPass(VignetteShader);
+    this.composer.addPass(this.vignettePass);
     this.composer.addPass(new OutputPass());
   }
 
   setBloomStrength(strength) {
     this.bloomPass.strength = strength;
+  }
+
+  setFlash(intensity) {
+    this.vignettePass.uniforms.flash.value = intensity;
   }
 
   setSize(width, height, pixelRatio) {

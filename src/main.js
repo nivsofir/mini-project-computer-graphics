@@ -8,7 +8,11 @@ import { CityGenerator } from "./city/CityGenerator.js";
 import { Roads } from "./environment/Roads.js";
 import { Rain } from "./environment/Rain.js";
 import { RainSplashes } from "./environment/RainSplashes.js";
+import { Snow } from "./environment/Snow.js";
+import { SnowAccumulation } from "./environment/SnowAccumulation.js";
 import { Lightning } from "./environment/Lightning.js";
+import { LightningBolt } from "./environment/LightningBolt.js";
+import { Weather, WEATHER_TYPES } from "./environment/Weather.js";
 import { Traffic } from "./environment/Traffic.js";
 import { Pedestrians } from "./environment/Pedestrians.js";
 import { createSky } from "./environment/Sky.js";
@@ -106,7 +110,8 @@ const blueLight = new THREE.PointLight(0x00aaff, 150, 40);
 blueLight.position.set(-15, 8, -10);
 scene.add(blueLight);
 
-const lightning = new Lightning(ambientLight, directionalLight);
+const lightningBolt = new LightningBolt(scene);
+const lightning = new Lightning(ambientLight, directionalLight, () => lightningBolt.strike());
 
 // ==========================
 // Ground
@@ -128,10 +133,16 @@ ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
 // ==========================
+// Snow accumulation (shared coverage uniform for roads + rooftops)
+// ==========================
+
+const snowAccumulation = new SnowAccumulation();
+
+// ==========================
 // Roads (static, seed-independent)
 // ==========================
 
-const roads = new Roads();
+const roads = new Roads(snowAccumulation.uniform);
 scene.add(roads.group);
 
 // ==========================
@@ -168,7 +179,7 @@ scene.add(cityGenerator.group);
 
 function regenerateCity(seed) {
   currentSeed = seed;
-  cityGenerator.generate(seed);
+  cityGenerator.generate(seed, snowAccumulation.uniform);
 }
 
 regenerateCity(currentSeed);
@@ -179,9 +190,25 @@ regenerateCity(currentSeed);
 
 const traffic = new Traffic(scene);
 const pedestrians = new Pedestrians(scene);
-const rain = new Rain(scene, 2500);
+const rain = new Rain(scene, 0);
 const rainSplashes = new RainSplashes(scene);
 const onRainLand = (x, z) => rainSplashes.spawn(x, z);
+const snow = new Snow(scene, 0);
+
+// ==========================
+// Weather (sunny / rain / storm / snow / blizzard)
+// ==========================
+
+const weather = new Weather({
+  scene,
+  rain,
+  snow,
+  lightning,
+  ambientLight,
+  directionalLight,
+});
+let currentWeatherType = "sunny";
+weather.setType(currentWeatherType);
 
 // ==========================
 // Cinematic camera
@@ -199,7 +226,8 @@ const ui = createUI({
   fogDensity: scene.fog.density,
   bloomStrength: postProcessing.bloomPass.strength,
   cameraSpeed: cinematicCamera.speed,
-  rainAmount: rain.count,
+  weatherType: currentWeatherType,
+  weatherTypes: WEATHER_TYPES,
 
   onGenerate: () => {
     const seed = randomSeed();
@@ -219,8 +247,9 @@ const ui = createUI({
   onSpeedChange: (speed) => {
     cinematicCamera.setSpeed(speed);
   },
-  onRainChange: (count) => {
-    rain.setCount(count);
+  onWeatherTypeChange: (type) => {
+    currentWeatherType = type;
+    weather.setType(type);
   },
 });
 
@@ -268,12 +297,16 @@ function animate() {
 
   rain.update(delta, onRainLand);
   rainSplashes.update(delta);
+  snow.update(delta);
+  snowAccumulation.update(delta, weather.snowT, weather.heavyT);
   traffic.update(delta);
   pedestrians.update(delta);
   cinematicCamera.update(delta);
   cityGenerator.update(clock.elapsedTime);
   roads.update(clock.elapsedTime);
   lightning.update(delta);
+  lightningBolt.update(lightning.flashIntensity);
+  postProcessing.setFlash(lightning.flashIntensity);
   reflectionProbe.update(delta);
 
   renderer.info.reset();

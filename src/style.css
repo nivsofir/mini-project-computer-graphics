@@ -135,6 +135,37 @@ canvas {
   accent-color: #00ffff;
 }
 
+.ui-weather-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ui-weather-btn {
+  flex: 1 1 54px;
+  padding: 5px 4px;
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #9fe6f2;
+  font-family: inherit;
+  font-size: 9px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+
+.ui-weather-btn:hover {
+  background: rgba(0, 255, 255, 0.15);
+}
+
+.ui-weather-btn.active {
+  background: rgba(0, 255, 255, 0.28);
+  border-color: rgba(0, 255, 255, 0.8);
+  color: #eafeff;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.35);
+}
+
 .ui-hint {
   margin-top: 10px;
   font-size: 9px;

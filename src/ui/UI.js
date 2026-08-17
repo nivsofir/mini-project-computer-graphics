@@ -16,8 +16,9 @@ export function createUI(options) {
     bloomStrength,
     onSpeedChange,
     cameraSpeed,
-    onRainChange,
-    rainAmount,
+    onWeatherTypeChange,
+    weatherType,
+    weatherTypes,
   } = options;
 
   const root = document.createElement("div");
@@ -49,8 +50,15 @@ export function createUI(options) {
         <input type="range" min="0.000005" max="0.00006" step="0.000001" value="${cameraSpeed}" class="ui-speed" />
       </div>
       <div class="ui-slider-row">
-        <label>Rain Amount</label>
-        <input type="range" min="0" max="6000" step="100" value="${rainAmount}" class="ui-rain" />
+        <label>Weather</label>
+        <div class="ui-weather-types">
+          ${weatherTypes
+            .map(
+              (type) =>
+                `<button class="ui-weather-btn" data-type="${type}">${type[0].toUpperCase()}${type.slice(1)}</button>`,
+            )
+            .join("")}
+        </div>
       </div>
     </div>
 
@@ -63,6 +71,7 @@ export function createUI(options) {
   const generateButton = root.querySelector(".ui-generate");
   const cameraButton = root.querySelector(".ui-camera-toggle");
   const fpsValue = root.querySelector(".ui-fps-value");
+  const weatherButtons = root.querySelectorAll(".ui-weather-btn");
 
   function setCameraButtonLabel(isCinematic) {
     cameraButton.textContent = isCinematic
@@ -96,9 +105,19 @@ export function createUI(options) {
   root.querySelector(".ui-speed").addEventListener("input", (event) => {
     onSpeedChange?.(parseFloat(event.target.value));
   });
-  root.querySelector(".ui-rain").addEventListener("input", (event) => {
-    onRainChange?.(parseInt(event.target.value, 10));
-  });
+  function setWeatherButtonActive(type) {
+    for (const button of weatherButtons) {
+      button.classList.toggle("active", button.dataset.type === type);
+    }
+  }
+  setWeatherButtonActive(weatherType);
+
+  for (const button of weatherButtons) {
+    button.addEventListener("click", () => {
+      setWeatherButtonActive(button.dataset.type);
+      onWeatherTypeChange?.(button.dataset.type);
+    });
+  }
 
   return {
     setSeed(newSeed) {
