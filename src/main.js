@@ -10,6 +10,7 @@ import { Rain } from "./environment/Rain.js";
 import { RainSplashes } from "./environment/RainSplashes.js";
 import { Lightning } from "./environment/Lightning.js";
 import { Traffic } from "./environment/Traffic.js";
+import { Police } from "./environment/Police.js";
 import { Pedestrians } from "./environment/Pedestrians.js";
 import { createSky } from "./environment/Sky.js";
 import { createSkylineSilhouette } from "./environment/SkylineSilhouette.js";
@@ -178,6 +179,7 @@ regenerateCity(currentSeed);
 // ==========================
 
 const traffic = new Traffic(scene);
+const police = new Police(scene);
 const pedestrians = new Pedestrians(scene);
 const rain = new Rain(scene, 2500);
 const rainSplashes = new RainSplashes(scene);
@@ -269,6 +271,7 @@ function animate() {
   rain.update(delta, onRainLand);
   rainSplashes.update(delta);
   traffic.update(delta);
+  police.update(delta);
   pedestrians.update(delta);
   cinematicCamera.update(delta);
   cityGenerator.update(clock.elapsedTime);

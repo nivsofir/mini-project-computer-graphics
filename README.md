@@ -120,7 +120,9 @@ small, roughly constant number regardless of city size:
 | `city/RoofDetails.js` | Instancing (one `InstancedMesh` per rooftop/facade/entrance prop type, incl. industrial pipes/vents) |
 | `city/NeonSigns.js` | Procedural texturing, instancing (shared glow-halo mesh) |
 | `environment/Roads.js` | Procedural modeling, texturing, animated UV offset (flowing neon pulse) |
+| `environment/VehicleGeometry.js` | Procedural modeling (shared compound car shape used by Traffic and Police) |
 | `environment/Traffic.js` | Instancing, transformations, animation |
+| `environment/Police.js` | Instancing, animation (strobing red/blue light bars; "chase" pairs via an oscillating gap on a shared lane, not pathfinding/AI) |
 | `environment/Pedestrians.js` | Instancing, animation |
 | `environment/Rain.js` | Particle systems (`LineSegments` streaks, not points), animation |
 | `environment/RainSplashes.js` | Particle systems (pooled/recycled `Points`, per-vertex alpha fade) |
