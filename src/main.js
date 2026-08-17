@@ -8,9 +8,11 @@ import { CityGenerator } from "./city/CityGenerator.js";
 import { Roads } from "./environment/Roads.js";
 import { Rain } from "./environment/Rain.js";
 import { RainSplashes } from "./environment/RainSplashes.js";
+import { Snow } from "./environment/Snow.js";
+import { SnowAccumulation } from "./environment/SnowAccumulation.js";
 import { Lightning } from "./environment/Lightning.js";
 import { LightningBolt } from "./environment/LightningBolt.js";
-import { Weather } from "./environment/Weather.js";
+import { Weather, WEATHER_TYPES } from "./environment/Weather.js";
 import { Traffic } from "./environment/Traffic.js";
 import { Pedestrians } from "./environment/Pedestrians.js";
 import { createSky } from "./environment/Sky.js";
@@ -131,10 +133,16 @@ ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
 // ==========================
+// Snow accumulation (shared coverage uniform for roads + rooftops)
+// ==========================
+
+const snowAccumulation = new SnowAccumulation();
+
+// ==========================
 // Roads (static, seed-independent)
 // ==========================
 
-const roads = new Roads();
+const roads = new Roads(snowAccumulation.uniform);
 scene.add(roads.group);
 
 // ==========================
@@ -171,7 +179,7 @@ scene.add(cityGenerator.group);
 
 function regenerateCity(seed) {
   currentSeed = seed;
-  cityGenerator.generate(seed);
+  cityGenerator.generate(seed, snowAccumulation.uniform);
 }
 
 regenerateCity(currentSeed);
@@ -185,20 +193,22 @@ const pedestrians = new Pedestrians(scene);
 const rain = new Rain(scene, 0);
 const rainSplashes = new RainSplashes(scene);
 const onRainLand = (x, z) => rainSplashes.spawn(x, z);
+const snow = new Snow(scene, 0);
 
 // ==========================
-// Weather (sunny -> raining -> lightning)
+// Weather (sunny / rain / storm / snow / blizzard)
 // ==========================
 
 const weather = new Weather({
   scene,
   rain,
+  snow,
   lightning,
   ambientLight,
   directionalLight,
 });
-let currentWeatherLevel = 0;
-weather.setLevel(currentWeatherLevel);
+let currentWeatherType = "sunny";
+weather.setType(currentWeatherType);
 
 // ==========================
 // Cinematic camera
@@ -216,7 +226,8 @@ const ui = createUI({
   fogDensity: scene.fog.density,
   bloomStrength: postProcessing.bloomPass.strength,
   cameraSpeed: cinematicCamera.speed,
-  weatherLevel: currentWeatherLevel,
+  weatherType: currentWeatherType,
+  weatherTypes: WEATHER_TYPES,
 
   onGenerate: () => {
     const seed = randomSeed();
@@ -236,9 +247,9 @@ const ui = createUI({
   onSpeedChange: (speed) => {
     cinematicCamera.setSpeed(speed);
   },
-  onWeatherChange: (level) => {
-    currentWeatherLevel = level;
-    weather.setLevel(level);
+  onWeatherTypeChange: (type) => {
+    currentWeatherType = type;
+    weather.setType(type);
   },
 });
 
@@ -286,6 +297,8 @@ function animate() {
 
   rain.update(delta, onRainLand);
   rainSplashes.update(delta);
+  snow.update(delta);
+  snowAccumulation.update(delta, weather.snowT, weather.heavyT);
   traffic.update(delta);
   pedestrians.update(delta);
   cinematicCamera.update(delta);

@@ -8,6 +8,7 @@ import {
 import { generateBuilding } from "./BuildingGenerator.js";
 import { RoofDetailSystem } from "./RoofDetails.js";
 import { createNeonSigns, disposeNeonSigns } from "./NeonSigns.js";
+import { applySnowCoating } from "../environment/SnowAccumulation.js";
 import {
   CITY_SIZE,
   CELL_SIZE,
@@ -62,7 +63,10 @@ export class CityGenerator {
     this._signMaterials = [];
   }
 
-  generate(seed) {
+  // `snowUniform`, if given, is Weather's shared snow-coverage uniform -
+  // reapplied to each freshly-built building material batch, since
+  // regenerating the city always creates brand new materials.
+  generate(seed, snowUniform) {
     this.dispose();
 
     const rng = new SeededRandom(seed);
@@ -131,6 +135,7 @@ export class CityGenerator {
       // Idle neon-flicker animation reads these back each frame.
       material.userData.baseEmissive = 1.2;
       material.userData.flickerPhase = Math.random() * Math.PI * 2;
+      if (snowUniform) applySnowCoating(material, snowUniform);
       this._buildingMaterials.push(material);
 
       const mesh = new THREE.Mesh(merged, material);
